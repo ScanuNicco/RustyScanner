@@ -10,36 +10,71 @@ sixtyfps::sixtyfps ! {
         MainWindow := Window {
                 width: 480px;
                 height: 262px;
-		TabWidget {
-            		Tab {
-                		title: "Library";
-                		StandardListView {
-                        		model: [{ text: "Artist names"}];
-                		}
-			}
-			Tab {
-				title: "Now Playing";
-				VerticalBox{
-					Text {
-						text: "Song Name - Artist Name";
-					}
-					Text {
-						text: "Album Name";
-						color: #333;
-					}
-					HorizontalBox{
-						Button {
-							text: "Back";
-						}
-						Button {
-							text: "Pause";
-						}
-						Button {
-							text: "Forward";
-						}
-					}
-				}
-			}
-		}
+                title: "Tamarack Music Player";
+                
+                Library := VerticalLayout {
+                    Rectangle {
+                        color: #eee;
+                        HorizontalBox {
+                            Button {
+                                text: "Shuffle All";
+                            }
+                            Text {
+                                text: "Library";
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                font-size: 14pt;
+                                font-weight: 500;
+                            }
+                            Button {
+                                text: "Now Playing";
+                                clicked => {
+                                    Library.visible = false;
+                                    Player.visible = true;
+                                }
+                            }
+                        }
+                    }
+                    StandardListView {
+                            border-width: 0px;
+                            model: [{ text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"},{ text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}];
+                    }
+                }
+                Player := VerticalBox{
+                    visible: false;
+                    Button {
+                                text: "Library";
+                                clicked => {
+                                    Library.visible = true;
+                                    Player.visible = false;
+                                }
+                                width: 100px;
+                                height: 25px;
+                    }
+                    Text {
+                        text: "Song Name - Artist Name";
+                        horizontal-alignment: center;
+                        font-size: 18pt;
+                        font-weight: 500;
+                    }
+                    Text {
+                        text: "Album Name";
+                        horizontal-alignment: center;
+                        font-size: 16pt;
+                        font-weight: 300;
+                        color: #555;
+                    }
+                    HorizontalBox{
+                        Button {
+                            text: "Back";
+                        }
+                        Button {
+                            text: "Pause";
+                        }
+                        Button {
+                            text: "Forward";
+                        }
+                    }
+                }
         }
 }
