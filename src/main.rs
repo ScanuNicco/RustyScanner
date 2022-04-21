@@ -1,80 +1,71 @@
-fn main() {
-        MainWindow::new().run();
-	let artists = ["Cake", "Coldplay", "R. E. M.", "Spoon", "Red Hot Chili Peppers", "Undercover S. K. A.", "Vampire Weekend"];
+use std::rc::Rc;
+use std::fs;
+use std::fs::DirEntry;
+use std::path::Path;
+use std::fs::File;
+use std::io::{Error, Write};
+use audiotags::{Tag, TagType};
+use serde::Serialize;
+use serde_json::Result;
+
+#[derive(Debug, Serialize)]
+struct ArtistData {
+    name: String,
+    albums: Vec<AlbumData>
 }
 
-//Maybe use the gallery demo from here as a base: https://sixtyfps.io/releases/0.1.1/editor/?load_url=https://sixtyfps.io/blog/introducing-sixtyfps/hello_world.60
-sixtyfps::sixtyfps ! {
-	import { Button, StandardListView, HorizontalBox, VerticalBox, TabWidget } from "sixtyfps_widgets.60";
+#[derive(Debug, Serialize)]
+struct AlbumData {
+    name: String,
+    songs: Vec<SongData>
+}
 
-        MainWindow := Window {
-                width: 480px;
-                height: 262px;
-                title: "Tamarack Music Player";
-                
-                Library := VerticalLayout {
-                    Rectangle {
-                        color: #eee;
-                        HorizontalBox {
-                            Button {
-                                text: "Shuffle All";
-                            }
-                            Text {
-                                text: "Library";
-                                horizontal-alignment: center;
-                                vertical-alignment: center;
-                                font-size: 14pt;
-                                font-weight: 500;
-                            }
-                            Button {
-                                text: "Now Playing";
-                                clicked => {
-                                    Library.visible = false;
-                                    Player.visible = true;
-                                }
-                            }
+#[derive(Debug, Serialize)]
+struct SongData {
+    title: String,
+    file: String
+}
+
+fn main()  {
+    let music_dir = "/home/nicco/Music/";
+	
+	let mut artists = vec![]; //Stores all data about artists. Each artist has a list of albums, and each album has a list of songs.
+	//entries.sort();
+    
+    let fsartists: Vec<_> = fs::read_dir(music_dir).unwrap().collect(); //The direct list of folders in music_dir
+	
+	for artist in fsartists {
+        let artist_name = artist.unwrap().file_name().to_str().unwrap().to_string();
+        let artist_dir = format!("{}{}", format!("{}{}", music_dir.to_string(), artist_name), "/".to_string());
+        if(Path::new(&artist_dir).is_dir()){
+            let fsalbums: Vec<_> = fs::read_dir(&artist_dir).unwrap().collect(); //The direct list of folders in the artist's directory
+            let mut artist_albums = vec![]; //The sanitized list of albums 
+            for album in fsalbums {
+                let album_name = album.unwrap().file_name().to_str().unwrap().to_string();
+                let album_dir = format!("{}{}", format!("{}{}", &artist_dir, album_name), "/".to_string());
+                if(Path::new(&album_dir).is_dir()){
+                    let fssongs: Vec<_> = fs::read_dir(&album_dir).unwrap().collect();
+                    let mut album_songs = vec![];
+                    for song in fssongs {
+                        let file_name = song.unwrap().file_name().to_str().unwrap().to_string();
+                        let song_path = format!("{}{}", &album_dir, file_name);
+                        let song_ext = Path::new(&song_path).extension().unwrap();
+                        if(song_ext == "m4a" || song_ext == "mp3"){
+                            let mut tag = Tag::new().read_from_path(&song_path).unwrap();
+                            let song_name = tag.title().unwrap().to_string();
+                            album_songs.push(SongData{ title: song_name, file: file_name});
                         }
                     }
-                    StandardListView {
-                            border-width: 0px;
-                            model: [{ text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"},{ text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}, { text: "Artist name"}];
-                    }
+                    artist_albums.push(AlbumData{ name: album_name, songs: album_songs});
                 }
-                Player := VerticalBox{
-                    visible: false;
-                    Button {
-                                text: "Library";
-                                clicked => {
-                                    Library.visible = true;
-                                    Player.visible = false;
-                                }
-                                width: 100px;
-                                height: 25px;
-                    }
-                    Text {
-                        text: "Song Name - Artist Name";
-                        horizontal-alignment: center;
-                        font-size: 18pt;
-                        font-weight: 500;
-                    }
-                    Text {
-                        text: "Album Name";
-                        horizontal-alignment: center;
-                        font-size: 16pt;
-                        font-weight: 300;
-                        color: #555;
-                    }
-                    HorizontalBox{
-                        Button {
-                            text: "Back";
-                        }
-                        Button {
-                            text: "Pause";
-                        }
-                        Button {
-                            text: "Forward";
-                        }
-                    }
-                }
+            }
+            artists.push(ArtistData{ name: artist_name.to_string(), albums: artist_albums });
         }
+    }
+    
+    let json = serde_json::to_string(&artists);
+    
+    
+    dbg!(json);
+
 }
