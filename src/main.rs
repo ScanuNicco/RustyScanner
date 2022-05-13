@@ -79,14 +79,14 @@ fn main()  {
                                     if let Some(possible_artwork) = tag.album_cover() {
                                         let album_artwork = possible_artwork;
                                         //dbg!(album_artwork.mime_type);
-                                        let imgType = match album_artwork.mime_type {
+                                        /*let imgType = match album_artwork.mime_type {
                                             audiotags::MimeType::Png => image::ImageFormat::Png,
                                             audiotags::MimeType::Jpeg => image::ImageFormat::Jpeg,
                                             audiotags::MimeType::Tiff => image::ImageFormat::Tiff,
                                             audiotags::MimeType::Bmp => image::ImageFormat::Bmp,
                                             audiotags::MimeType::Gif => image::ImageFormat::Gif
-                                        };
-                                        let img = image::load_from_memory_with_format(album_artwork.data, imgType).unwrap();
+                                        };*/
+                                        let img = image::load_from_memory(album_artwork.data).unwrap();
                                         img.save(&possiblePath);
                                         gotArt = true;
                                         albumArtPath = &possiblePath.as_str();
