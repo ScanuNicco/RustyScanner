@@ -97,7 +97,7 @@ fn main()  {
                             album_songs.push(SongData{ title: song_name.to_string(), file: file_name});
                         }
                     }
-                    album_songs.sort_by(|a, b| a.title.cmp(&b.title));
+                    album_songs.sort_by(|a, b| a.file.cmp(&b.file));
                     artist_albums.push(AlbumData{ name: album_name, songs: album_songs, artwork: albumArtPath.to_string()});
                 }
             }
